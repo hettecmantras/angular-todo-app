@@ -1,0 +1,116 @@
+<div class="app-shell">
+  <header class="hero">
+    <p class="eyebrow">Focus &amp; Flow</p>
+    <h1>Todo Lab</h1>
+    <p class="lead">
+      Capture your ideas, set sensible priorities, and keep track of what you own without toggling between tools.
+    </p>
+
+    <div class="hero-stats">
+      <article class="stat-card">
+        <span>Total tasks</span>
+        <strong>{{ stats().total }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>In progress</span>
+        <strong>{{ stats().active }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Completed</span>
+        <strong>{{ stats().completed }}</strong>
+      </article>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-bar" role="presentation">
+        <span class="progress-fill" [style.width.%]="progress()"></span>
+      </div>
+      <p>{{ progress() }}% complete</p>
+    </div>
+  </header>
+
+  <section class="composer">
+    <form class="composer-card" (ngSubmit)="addTodo()" autocomplete="off">
+      <div class="field">
+        <label for="task-title">New task</label>
+        <input
+          id="task-title"
+          name="title"
+          type="text"
+          placeholder="What deserves your attention today?"
+          [(ngModel)]="draft.title"
+          autocomplete="off"
+          maxlength="120"
+          required
+        />
+      </div>
+
+      <div class="field-row">
+        <label for="task-priority">Priority</label>
+        <select id="task-priority" name="priority" [(ngModel)]="draft.priority">
+          <option *ngFor="let option of priorityOptions" [value]="option">{{ option }}</option>
+        </select>
+        <label for="task-due">Due</label>
+        <input id="task-due" name="dueDate" type="date" [(ngModel)]="draft.dueDate" />
+      </div>
+
+      <div class="field">
+        <label for="task-notes">Notes</label>
+        <textarea
+          id="task-notes"
+          name="description"
+          rows="2"
+          placeholder="Optional context, links, or reference points"
+          [(ngModel)]="draft.description"
+        ></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="submit" [disabled]="!draft.title.trim()">Add task</button>
+        <button type="button" class="ghost" (click)="clearCompleted()" [disabled]="stats().completed === 0">
+          Clear completed
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="workspace">
+    <div class="filters" role="tablist">
+      <button
+        type="button"
+        *ngFor="let filterButton of filters"
+        [class.active]="viewFilter() === filterButton.value"
+        (click)="setFilter(filterButton.value)"
+      >
+        {{ filterButton.label }}
+      </button>
+    </div>
+
+    <div class="task-grid">
+      <article *ngFor="let todo of filteredTodos()" class="task-card" [class.completed]="todo.completed">
+        <div class="task-main">
+          <button
+            type="button"
+            class="status-dot"
+            aria-label="Toggle completion"
+            (click)="toggleCompletion(todo.id)"
+          >
+            <span *ngIf="todo.completed">✓</span>
+          </button>
+          <div class="copy">
+            <h3>{{ todo.title }}</h3>
+            <p>{{ todo.description || 'No extra notes added yet.' }}</p>
+          </div>
+        </div>
+        <div class="task-meta">
+          <span class="badge" [ngClass]="priorityClass(todo.priority)">{{ todo.priority }}</span>
+          <span class="due">{{ formatDueDate(todo.dueDate) }}</span>
+        </div>
+        <div class="task-actions">
+          <time>{{ formatCreatedAt(todo.createdAt) }}</time>
+          <button type="button" class="text-icon" (click)="removeTodo(todo.id)">Delete</button>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
